@@ -27,6 +27,19 @@ ASSERT_STRUCT_SIZE(CRITICAL_SECTION, 0x18);
 
 namespace game
 {
+	enum gamemode
+	{
+		iw5mp,
+		t4mp,
+		t4sp,
+		t5mp,
+		t5sp,
+		t6mp,
+		t6zm
+	};
+
+	gamemode get_gamemode();
+
 	bool is_iw5();
 	bool is_t4();
 	bool is_t5();

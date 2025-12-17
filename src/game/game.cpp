@@ -3,51 +3,51 @@
 
 namespace game
 {
-	enum gamemode
-	{
-		iw5mp,
-		t4mp,
-		t4sp,
-		t5mp,
-		t5sp,
-		t6mp,
-		t6zm
-	};
+	std::optional<gamemode> current;
 
-	gamemode current =
-		reinterpret_cast<const char*>(0x88A5DC) == "CoDWaW.exe"s ? gamemode::t4sp : (
-		reinterpret_cast<const char*>(0x858648) == "CoDWaW.exe"s ? gamemode::t4mp : (
-		reinterpret_cast<const char*>(0xA60BA8) == "BlackOpsMP.exe"s ? gamemode::t5mp : (
-		reinterpret_cast<const char*>(0x9D8514) == "BlackOps.exe"s ? gamemode::t5sp : (
-		reinterpret_cast<const char*>(0x7F4CF4) == "iw5mp_ship.exe"s ? gamemode::iw5mp : (
-		reinterpret_cast<const char*>(0xD369F2) == "t6zm.exe"s ? gamemode::t6zm : (
-		gamemode::t6mp
-	))))));
+	gamemode get_gamemode()
+	{
+		if (!current.has_value())
+		{
+			current =
+				reinterpret_cast<const char*>(0x88A5DC) == "CoDWaW.exe"s ? gamemode::t4sp : (
+				reinterpret_cast<const char*>(0x858648) == "CoDWaW.exe"s ? gamemode::t4mp : (
+				reinterpret_cast<const char*>(0xA60BA8) == "BlackOpsMP.exe"s ? gamemode::t5mp : (
+				reinterpret_cast<const char*>(0x9D8514) == "BlackOps.exe"s ? gamemode::t5sp : (
+				reinterpret_cast<const char*>(0x7F4CF4) == "iw5mp_ship.exe"s ? gamemode::iw5mp : (
+				reinterpret_cast<const char*>(0xD369F2) == "t6zm.exe"s ? gamemode::t6zm : (
+				gamemode::t6mp
+			))))));
+		}
+
+		assert(current.has_value());
+		return *current;
+	}
 
 	bool is_iw5()
 	{
-		return current == gamemode::iw5mp;
+		return get_gamemode() == gamemode::iw5mp;
 	}
 
 	bool is_t4()
 	{
-		return current == gamemode::t4mp || current == gamemode::t4sp;
+		return get_gamemode() == gamemode::t4mp || get_gamemode() == gamemode::t4sp;
 	}
 
 	bool is_t5()
 	{
-		return current == gamemode::t5mp || current == gamemode::t5sp;
+		return get_gamemode() == gamemode::t5mp || get_gamemode() == gamemode::t5sp;
 	}
 
 	bool is_t6()
 	{
-		return current == gamemode::t6mp || current == gamemode::t6zm;
+		return get_gamemode() == gamemode::t6mp || get_gamemode() == gamemode::t6zm;
 	}
 
 	bool is_mp()
 	{
-		return current == gamemode::iw5mp || current == gamemode::t4mp ||
-			current == gamemode::t5mp || current == gamemode::t6mp;
+		return get_gamemode() == gamemode::iw5mp || get_gamemode() == gamemode::t4mp ||
+			get_gamemode() == gamemode::t5mp || get_gamemode() == gamemode::t6mp;
 	}
 
 	bool is_sp()

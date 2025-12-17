@@ -3,10 +3,6 @@
 class component_interface
 {
 public:
-	virtual ~component_interface()
-	{
-	}
-
 	virtual void on_startup()
 	{
 	}
