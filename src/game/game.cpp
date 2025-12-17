@@ -1,0 +1,80 @@
+#include <stdinc.hpp>
+#include "utils/flags.hpp"
+
+namespace game
+{
+	enum gamemode
+	{
+		iw5mp,
+		t4mp,
+		t4sp,
+		t5mp,
+		t5sp,
+		t6mp,
+		t6zm
+	};
+
+	gamemode current =
+		reinterpret_cast<const char*>(0x88A5DC) == "CoDWaW.exe"s ? gamemode::t4sp : (
+		reinterpret_cast<const char*>(0x858648) == "CoDWaW.exe"s ? gamemode::t4mp : (
+		reinterpret_cast<const char*>(0xA60BA8) == "BlackOpsMP.exe"s ? gamemode::t5mp : (
+		reinterpret_cast<const char*>(0x9D8514) == "BlackOps.exe"s ? gamemode::t5sp : (
+		reinterpret_cast<const char*>(0x7F4CF4) == "iw5mp_ship.exe"s ? gamemode::iw5mp : (
+		reinterpret_cast<const char*>(0xD369F2) == "t6zm.exe"s ? gamemode::t6zm : (
+		gamemode::t6mp
+	))))));
+
+	bool is_iw5()
+	{
+		return current == gamemode::iw5mp;
+	}
+
+	bool is_t4()
+	{
+		return current == gamemode::t4mp || current == gamemode::t4sp;
+	}
+
+	bool is_t5()
+	{
+		return current == gamemode::t5mp || current == gamemode::t5sp;
+	}
+
+	bool is_t6()
+	{
+		return current == gamemode::t6mp || current == gamemode::t6zm;
+	}
+
+	bool is_mp()
+	{
+		return current == gamemode::iw5mp || current == gamemode::t4mp ||
+			current == gamemode::t5mp || current == gamemode::t6mp;
+	}
+
+	bool is_sp()
+	{
+		return !is_mp();
+	}
+
+	bool is_zm()
+	{
+		return is_sp();
+	}
+
+	bool is_dedi()
+	{
+		static bool answer = utils::flags::has_flag("dedicated");
+		return answer;
+	}
+
+	bool is_lan()
+	{
+		static bool answer = utils::flags::has_flag("lan");
+		return answer;
+	}
+
+	const std::filesystem::path& get_storage_location()
+    {
+        static const auto storage_path = utils::helpers::get_plutonium_path() / "storage" / (is_iw5() ? "iw5" : (is_t4() ? "t4" : (is_t5() ? "t5" : "t6")));
+        return storage_path;
+    }
+}
