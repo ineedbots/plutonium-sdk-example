@@ -11,7 +11,14 @@ namespace utils::helpers
         std::string message = vfmt(fmt, args);
         va_end(args);
 
-        plugin::get()->get_interface()->logging()->info(message);
+        if (plugin::get()->get_interface() != nullptr)
+        {
+            plugin::get()->get_interface()->logging()->info(message);
+        }
+        else
+        {
+            printf("%s\n", message.c_str());
+        }
     }
 
     void console::warn(const char* fmt, ...)
@@ -21,7 +28,14 @@ namespace utils::helpers
         std::string message = vfmt(fmt, args);
         va_end(args);
 
-        plugin::get()->get_interface()->logging()->warn(message);
+        if (plugin::get()->get_interface() != nullptr)
+        {
+            plugin::get()->get_interface()->logging()->warn(message);
+        }
+        else
+        {
+            printf("%s\n", message.c_str());
+        }
     }
 
     void console::error(const char* fmt, ...)
@@ -31,7 +45,14 @@ namespace utils::helpers
         std::string message = vfmt(fmt, args);
         va_end(args);
 
-        plugin::get()->get_interface()->logging()->error(message);
+        if (plugin::get()->get_interface() != nullptr)
+        {
+            plugin::get()->get_interface()->logging()->error(message);
+        }
+        else
+        {
+            printf("%s\n", message.c_str());
+        }
     }
 
     std::string vfmt(const char* fmt, va_list args)

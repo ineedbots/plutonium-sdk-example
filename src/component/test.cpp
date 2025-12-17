@@ -97,53 +97,67 @@ namespace test
 			if (game::is_iw5())
 			{
 				assert(game::is_mp());
-				iw5::add_command("test_func", []()
-				{
-					con::info("test_func was called with %d args %s\n", game::iw5::Cmd_Argc(), game::iw5::Cmd_Argv(0));
-				});
 
-				iw5::add_sv_command("test_func2", []()
+				// game should init before we add commands
+				plugin::get()->get_interface()->callbacks()->on_after_dvar_init([]()
 				{
-					con::info("test_func2 was called with %d args %s\n", game::iw5::SV_Cmd_Argc(), game::iw5::SV_Cmd_Argv(0));
+					iw5::add_command("test_func", []()
+					{
+						con::info("test_func was called with %d args %s\n", game::iw5::Cmd_Argc(), game::iw5::Cmd_Argv(0));
+					});
+
+					iw5::add_sv_command("test_func2", []()
+					{
+						con::info("test_func2 was called with %d args %s\n", game::iw5::SV_Cmd_Argc(), game::iw5::SV_Cmd_Argv(0));
+					});
 				});
 			}
 
 			if (game::is_t4())
 			{
-				t4::add_command("test_func", []()
+				plugin::get()->get_interface()->callbacks()->on_after_dvar_init([]()
 				{
-					con::info("test_func was called with %d args %s\n", game::t4::Cmd_Argc(), game::t4::Cmd_Argv(0));
-				});
+					t4::add_command("test_func", []()
+					{
+						con::info("test_func was called with %d args %s\n", game::t4::Cmd_Argc(), game::t4::Cmd_Argv(0));
+					});
 
-				t4::add_sv_command("test_func2", []()
-				{
-					con::info("test_func2 was called with %d args %s\n", game::t4::SV_Cmd_Argc(), game::t4::SV_Cmd_Argv(0));
+					t4::add_sv_command("test_func2", []()
+					{
+						con::info("test_func2 was called with %d args %s\n", game::t4::SV_Cmd_Argc(), game::t4::SV_Cmd_Argv(0));
+					});
 				});
 			}
 
 			if (game::is_t5())
 			{
-				t5::add_command("test_func", []()
+				plugin::get()->get_interface()->callbacks()->on_after_dvar_init([]()
 				{
-					con::info("test_func was called with %d args %s\n", game::t5::Cmd_Argc(), game::t5::Cmd_Argv(0));
-				});
+					t5::add_command("test_func", []()
+					{
+						con::info("test_func was called with %d args %s\n", game::t5::Cmd_Argc(), game::t5::Cmd_Argv(0));
+					});
 
-				t5::add_sv_command("test_func2", []()
-				{
-					con::info("test_func2 was called with %d args %s\n", game::t5::SV_Cmd_Argc(), game::t5::SV_Cmd_Argv(0));
+					t5::add_sv_command("test_func2", []()
+					{
+						con::info("test_func2 was called with %d args %s\n", game::t5::SV_Cmd_Argc(), game::t5::SV_Cmd_Argv(0));
+					});
 				});
 			}
 
 			if (game::is_t6())
 			{
-				t6::add_command("test_func", []()
+				plugin::get()->get_interface()->callbacks()->on_after_dvar_init([]()
 				{
-					con::info("test_func was called with %d args %s\n", game::t6::Cmd_Argc(), game::t6::Cmd_Argv(0));
-				});
+					t6::add_command("test_func", []()
+					{
+						con::info("test_func was called with %d args %s\n", game::t6::Cmd_Argc(), game::t6::Cmd_Argv(0));
+					});
 
-				t6::add_sv_command("test_func2", []()
-				{
-					con::info("test_func2 was called with %d args %s\n", game::t6::SV_Cmd_Argc(), game::t6::SV_Cmd_Argv(0));
+					t6::add_sv_command("test_func2", []()
+					{
+						con::info("test_func2 was called with %d args %s\n", game::t6::SV_Cmd_Argc(), game::t6::SV_Cmd_Argv(0));
+					});
 				});
 			}
 		}
