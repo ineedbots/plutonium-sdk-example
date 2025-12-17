@@ -1,8 +1,5 @@
 #pragma once
 
-#include <mutex>
-#include <vector>
-
 namespace utils
 {
 	class memory final
@@ -62,10 +59,6 @@ namespace utils
 		static void free(const void* data);
 
 		static bool is_set(const void* mem, char chr, size_t length);
-
-		static bool is_bad_read_ptr(const void* ptr);
-		static bool is_bad_code_ptr(const void* ptr);
-		static bool is_rdata_ptr(void* ptr);
 
 		static allocator* get_allocator();
 

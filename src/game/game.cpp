@@ -1,5 +1,7 @@
 #include <stdinc.hpp>
 #include "utils/flags.hpp"
+#include "game/game.hpp"
+#include <utils/helpers.hpp>
 
 namespace game
 {
@@ -16,8 +18,9 @@ namespace game
 				reinterpret_cast<const char*>(0x9D8514) == "BlackOps.exe"s ? gamemode::t5sp : (
 				reinterpret_cast<const char*>(0x7F4CF4) == "iw5mp_ship.exe"s ? gamemode::iw5mp : (
 				reinterpret_cast<const char*>(0xD369F2) == "t6zm.exe"s ? gamemode::t6zm : (
-				gamemode::t6mp
-			))))));
+				reinterpret_cast<const char*>(0xD41402) == "t6mp.exe"s ? gamemode::t6mp : (
+				gamemode::none
+			)))))));
 		}
 
 		assert(current.has_value());
@@ -73,8 +76,8 @@ namespace game
 	}
 
 	const std::filesystem::path& get_storage_location()
-    {
-        static const auto storage_path = utils::helpers::get_plutonium_path() / "storage" / (is_iw5() ? "iw5" : (is_t4() ? "t4" : (is_t5() ? "t5" : "t6")));
-        return storage_path;
-    }
+	{
+		static const auto storage_path = utils::helpers::get_plutonium_path() / "storage" / (is_iw5() ? "iw5" : (is_t4() ? "t4" : (is_t5() ? "t5" : "t6")));
+		return storage_path;
+	}
 }

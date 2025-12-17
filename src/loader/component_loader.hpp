@@ -1,4 +1,5 @@
 #pragma once
+#include "component_interface.hpp"
 
 class component_loader final
 {

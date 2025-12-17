@@ -1,4 +1,5 @@
 #pragma once
+#include <plutonium_sdk.hpp>
 
 namespace plugin
 {

@@ -1,6 +1,5 @@
 #pragma once
 #include "memory.hpp"
-#include <cstdint>
 
 #ifndef ARRAYSIZE
 template <class Type, size_t n>

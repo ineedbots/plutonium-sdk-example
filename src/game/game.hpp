@@ -29,6 +29,7 @@ namespace game
 {
 	enum gamemode
 	{
+		none,
 		iw5mp,
 		t4mp,
 		t4sp,

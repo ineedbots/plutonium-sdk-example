@@ -1,5 +1,6 @@
 #include <stdinc.hpp>
 #include "component_loader.hpp"
+#include "component_interface.hpp"
 
 void component_loader::register_component(std::unique_ptr<component_interface>&& component_)
 {
@@ -32,9 +33,6 @@ void component_loader::on_shutdown()
 
 std::vector<std::unique_ptr<component_interface>>& component_loader::get_components()
 {
-	using component_vector = std::vector<std::unique_ptr<component_interface>>;
-	using component_vector_container = std::unique_ptr<component_vector, std::function<void(component_vector*)>>;
-
-	static component_vector_container components(new component_vector);
-	return *components;
+	static std::vector<std::unique_ptr<component_interface>> components{};
+	return components;
 }

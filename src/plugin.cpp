@@ -1,11 +1,15 @@
 #include <stdinc.hpp>
+
+#include <plutonium_sdk.hpp>
+#include "plugin.hpp"
 #include "loader/component_loader.hpp"
+#include "game/game.hpp"
 
 namespace plugin
 {
 	std::uint32_t plugin::plugin_version()
 	{
-		return 1;
+		return PLUTONIUM_SDK_VERSION;
 	}
 
 	const char* plugin::plugin_name()
@@ -15,7 +19,7 @@ namespace plugin
 
 	bool plugin::is_game_supported(plutonium::sdk::game)
 	{
-		return true;
+		return game::get_gamemode() != game::none;
 	}
 
 	void plugin::on_startup(plutonium::sdk::iinterface* interface_ptr, plutonium::sdk::game game)

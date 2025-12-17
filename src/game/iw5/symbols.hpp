@@ -2,9 +2,9 @@
 
 namespace game::iw5
 {
-    int Cmd_Argc();
-    
-    int SV_Cmd_Argc();
+	int Cmd_Argc();
+	
+	int SV_Cmd_Argc();
 
 
 	WEAK symbol<void(const char *cmdName, void (__cdecl *function)(), cmd_function_s *allocedCmd)> Cmd_AddCommandInternal{ 0x545DF0, 0x0 };
@@ -16,5 +16,5 @@ namespace game::iw5
 	WEAK symbol<const char*(int)> SV_Cmd_Argv{ 0x5455D0, 0x0 };
 
 
-    WEAK symbol<CmdArgs> sv_cmd_args{ 0x1CAA998, 0x0 };
+	WEAK symbol<CmdArgs> sv_cmd_args{ 0x1CAA998, 0x0 };
 }

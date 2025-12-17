@@ -1,5 +1,8 @@
 #include <stdinc.hpp>
 
+#include <plutonium_sdk.hpp>
+#include "plugin.hpp"
+
 PLUTONIUM_API plutonium::sdk::plugin* PLUTONIUM_CALLBACK on_initialize()
 {
 	return plugin::get();

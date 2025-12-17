@@ -2,7 +2,7 @@
 
 namespace game::t5
 {
-    int SV_Cmd_Argc();
+	int SV_Cmd_Argc();
 
 
 	WEAK symbol<void(const char *cmdName, void (__cdecl *function)(), cmd_function_s *allocedCmd)> Cmd_AddCommandInternal{ 0x6AD580, 0x661400 };
