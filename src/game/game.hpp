@@ -91,3 +91,6 @@ namespace game
 
 #include "t5/structs.hpp"
 #include "t5/symbols.hpp"
+
+#include "t6/structs.hpp"
+#include "t6/symbols.hpp"
