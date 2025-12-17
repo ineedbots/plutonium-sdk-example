@@ -46,7 +46,6 @@ workspace "plutonium_plugin_base"
 	systemversion "latest"
 	symbols "On"
 	staticruntime "On"
-	editandcontinue "Off"
 	warnings "Extra"
 	characterset "ASCII"
 
@@ -54,7 +53,6 @@ workspace "plutonium_plugin_base"
 
 	flags
 	{
-		"NoIncrementalLink",
 		"MultiProcessorCompile",
 	}
 	

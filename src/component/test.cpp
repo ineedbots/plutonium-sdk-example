@@ -87,6 +87,11 @@ namespace test
 	class component final : public component_interface
 	{
 	public:
+		component()
+		{
+			con::info("test component constructed\n");
+		}
+
 		void on_startup() override
 		{
 			if (game::is_iw5())

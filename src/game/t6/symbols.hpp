@@ -2,6 +2,9 @@
 
 namespace game::t6
 {
+	cmd_function_s* SV_Cmd_FindCommand(const char* cmdName);
+
+
 	WEAK symbol<void(const char *cmdName, void (__cdecl *function)(), cmd_function_s *allocedCmd)> Cmd_AddCommandInternal{ 0x5B3070, 0x4DC2A0 };
 	WEAK symbol<void(const char *cmdName, void (__cdecl *function)(), cmd_function_s *allocedCmd)> Cmd_AddServerCommandInternal{ 0x4536B0, 0x615800 };
 	WEAK symbol<const char*(int argIndex)> Cmd_Argv{ 0x5608F0, 0x6B3D40 };
@@ -10,4 +13,7 @@ namespace game::t6
 
 	WEAK symbol<const char*(int)> SV_Cmd_Argv{ 0x6DBF80, 0x520F20 };
 	WEAK symbol<int()> SV_Cmd_Argc{ 0x5A81B0, 0x6BCAE0 };
+
+
+	WEAK symbol<cmd_function_s*> sv_cmd_functions{ 0x2538B50, 0x250A6D0 };
 }
