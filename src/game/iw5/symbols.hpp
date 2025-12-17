@@ -4,8 +4,6 @@ namespace game::iw5
 {
     int Cmd_Argc();
     
-    void Live_Frame(int, int);
-    
     int SV_Cmd_Argc();
 
 

@@ -90,3 +90,6 @@ namespace game
 
 #include "iw5/structs.hpp"
 #include "iw5/symbols.hpp"
+
+#include "t4/structs.hpp"
+#include "t4/symbols.hpp"
