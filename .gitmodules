@@ -1,0 +1,6 @@
+[submodule "deps/minhook"]
+	path = deps/minhook
+	url = https://github.com/TsudaKageyu/minhook.git
+[submodule "deps/plutonium-sdk"]
+	path = deps/plutonium-sdk
+	url = https://github.com/plutoniummod/plutonium-sdk.git
