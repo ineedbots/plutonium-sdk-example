@@ -11,13 +11,8 @@
 #define ARRAY_COUNT(arrayn) \
 	((sizeof(arrayn)) / (sizeof(arrayn[0])))
 
-#ifdef __cplusplus
 #define ASSERT_STRUCT_SIZE(structure, size) static_assert(sizeof(structure) == size, "sizeof(" #structure ") != " #size);
 #define ASSERT_STRUCT_OFFSET(structure, member, offset) static_assert(offsetof(structure, member) == offset, "offsetof(" #structure ", " #member ") != " #offset);
-#else
-#define ASSERT_STRUCT_SIZE(structure, size)
-#define ASSERT_STRUCT_OFFSET(structure, member, offset)
-#endif
 
 ASSERT_STRUCT_SIZE(int, 4);
 ASSERT_STRUCT_SIZE(char, 1);
@@ -93,3 +88,6 @@ namespace game
 
 #include "t4/structs.hpp"
 #include "t4/symbols.hpp"
+
+#include "t5/structs.hpp"
+#include "t5/symbols.hpp"
