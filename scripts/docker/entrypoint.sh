@@ -3,6 +3,7 @@
 echo "Updating Plutonium files..."
 ./plutonium-updater -d ./plutonium/
 cd plutonium/
+mkdir -p plugins
 
 GAME_PATH="/game"
 if [[ ! -d $GAME_PATH ]]; then

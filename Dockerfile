@@ -28,8 +28,7 @@ USER app
 
 COPY scripts/docker/entrypoint.sh entrypoint.sh
 VOLUME [ "/app/plutonium" ]
-RUN mkdir -p plutonium/plugins
-COPY build/bin/Release/plutonium_plugin_base.dll plutonium/plugins/plutonium_plugin_base.dll
+RUN mkdir plutonium
 
 EXPOSE 28960/udp
 ENTRYPOINT [ "./entrypoint.sh" ]

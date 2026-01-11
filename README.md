@@ -12,8 +12,6 @@ Nothing.
 
 # Docker Image
 
-When building the image, it will attempt to look at `.\build\bin\Release\plutonium_plugin_base.dll` and install the built plugin into the image.
-
 When you run the image, you need to bind your game folder (root of your game's files) to `/game`.
 
 The image uses `/app/plutonium` as a volume for the plutonium install files (these will be automatically downloaded and/or updated).
@@ -22,7 +20,7 @@ You need to provide `PLUTO_GAME` environment variable, this is one of `iw5mp`, `
 
 You can provide `PLUTO_KEY` environment variable, this is your dedicated server key.
 
-You can provide `PLUTO_CONFIG` environment variable, this is the config file to execute when the dedicated server starts.
+You can provide `PLUTO_CONFIG` environment variable, this is the config file to execute when the dedicated server starts (like dedicated.cfg).
 
 `PLUTO_FLAGS` environment variable is optional for including things like `-lan -raw-console`.
 
@@ -31,6 +29,11 @@ You can provide `PLUTO_CONFIG` environment variable, this is the config file to 
 `PLUTO_PORT` environment variable is optional, defaults to `28960`. This is the UDP port of the game, image defaults `28960` to be exposed.
 
 And any additional args will be appended to the bootstrapper args.
+
+Heres an example of building and running the image.
+```bash
+docker build --tag plutonium_plugin_base . && docker run --mount type=bind,src="C:\\path\\to\\your\\BO2",dst=/game --mount type=bind,src="C:\\path\\to\\your\\Plutonium",dst=/app/plutonium --env PLUTO_GAME=t6mp --env PLUTO_FLAGS=-lan --env PLUTO_CONFIG=docker.cfg -it --rm plutonium_plugin_base
+```
 
 
 # Credits
