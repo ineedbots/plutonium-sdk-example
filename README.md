@@ -16,7 +16,7 @@ When building the image, it will attempt to look at `.\build\bin\Release\plutoni
 
 When you run the image, you need to bind your game folder (root of your game's files) to `/game`.
 
-The image uses `/app/plutonium` as a volume for the plutonium install files (these can be automatically downloaded and/or updated).
+The image uses `/app/plutonium` as a volume for the plutonium install files (these will be automatically downloaded and/or updated).
 
 You need to provide `PLUTO_GAME` environment variable, this is one of `iw5mp`, `t4sp`, `t6zm`, etc.
 
