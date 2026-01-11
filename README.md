@@ -32,7 +32,13 @@ And any additional args will be appended to the bootstrapper args.
 
 Heres an example of building and running the image.
 ```bash
-docker build --tag plutonium_plugin_base . && docker run --mount type=bind,src="C:\\path\\to\\your\\BO2",dst=/game --mount type=bind,src="C:\\path\\to\\your\\Plutonium",dst=/app/plutonium --env PLUTO_GAME=t6mp --env PLUTO_FLAGS=-lan --env PLUTO_CONFIG=docker.cfg -it --rm plutonium_plugin_base
+docker build --tag plutonium_plugin_base .
+docker run --mount type=bind,src="C:\\path\\to\\your\\BO2",dst=/game \
+  --mount type=bind,src="C:\\path\\to\\your\\Plutonium",dst=/app/plutonium \
+  --env PLUTO_GAME=t6mp \
+  --env PLUTO_FLAGS=-lan \
+  --env PLUTO_CONFIG=docker.cfg \
+  -it --rm plutonium_plugin_base
 ```
 
 
