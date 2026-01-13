@@ -38,6 +38,7 @@ docker run --mount type=bind,src="C:\\path\\to\\your\\BO2",dst=/game \
   --env PLUTO_GAME=t6mp \
   --env PLUTO_FLAGS=-lan \
   --env PLUTO_CONFIG=docker.cfg \
+  -p 28960:28960/udp
   -it --rm plutonium_plugin_base
 ```
 
