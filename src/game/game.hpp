@@ -1,6 +1,5 @@
 #pragma once
 
-#define WEAK __declspec(selectany)
 #define NAKED __declspec(naked)
 
 // t6 no sp...
@@ -10,6 +9,41 @@
 
 #define ARRAY_COUNT(arrayn) \
 	((sizeof(arrayn)) / (sizeof(arrayn[0])))
+
+struct pushfd_s
+{
+    volatile unsigned int CF : 1; // Carry
+    volatile unsigned int : 1;
+    volatile unsigned int PF : 1; // Parity
+    volatile unsigned int : 1;
+    volatile unsigned int AF : 1; // Auxiliary Carry 
+    volatile unsigned int : 1;
+    volatile unsigned int ZF : 1; // Zero
+    volatile unsigned int SF : 1; // Sign
+    volatile unsigned int TF : 1; // Trap
+    volatile unsigned int IF : 1; // Interrupt enable
+    volatile unsigned int DF : 1; // Direction
+    volatile unsigned int OF : 1; // Overflow
+    volatile unsigned int pad : 20;
+};
+
+struct pushad_s
+{
+    volatile size_t EDI;
+    volatile size_t ESI;
+    volatile size_t EBP;
+    volatile size_t ESP;
+    volatile size_t EBX;
+    volatile size_t EDX;
+    volatile size_t ECX;
+    volatile size_t EAX;
+};
+
+typedef volatile size_t retaddr_t;
+
+#define popad_esp   \
+        popad       \
+  __asm mov esp, [esp - 0x14]
 
 #define ASSERT_STRUCT_SIZE(structure, size) static_assert(sizeof(structure) == size, "sizeof(" #structure ") != " #size);
 #define ASSERT_STRUCT_OFFSET(structure, member, offset) static_assert(offsetof(structure, member) == offset, "offsetof(" #structure ", " #member ") != " #offset);
@@ -55,46 +89,11 @@ namespace game
 
 	const std::filesystem::path& get_storage_location();
 
-	template <typename T>
-	class symbol
+	template<typename T>
+	constexpr T& pointer(std::uintptr_t addr)
 	{
-	public:
-		symbol(const size_t mp, const size_t notmp)
-			: mp_(reinterpret_cast<T*>(mp))
-			, notmp_(reinterpret_cast<T*>(notmp))
-		{
-		}
-
-		T* get() const
-		{
-			if (is_mp())
-			{
-				return mp_;
-			}
-
-			return notmp_;
-		}
-
-		void set(const size_t ptr)
-		{
-			this->mp_ = reinterpret_cast<T*>(ptr);
-			this->notmp_ = reinterpret_cast<T*>(ptr);
-		}
-
-		operator T* () const
-		{
-			return this->get();
-		}
-
-		T* operator->() const
-		{
-			return this->get();
-		}
-
-	private:
-		T* mp_;
-		T* notmp_;
-	};
+		return *reinterpret_cast<T*>(addr);
+	}
 }
 
 #include "iw5/structs.hpp"

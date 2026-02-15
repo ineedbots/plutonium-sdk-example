@@ -7,14 +7,14 @@ namespace game::iw5
 	int SV_Cmd_Argc();
 
 
-	WEAK symbol<void(const char *cmdName, void (__cdecl *function)(), cmd_function_s *allocedCmd)> Cmd_AddCommandInternal{ 0x545DF0, 0x0 };
-	WEAK symbol<void(const char *cmdName, void (__cdecl *function)(), cmd_function_s *allocedCmd)> Cmd_AddServerCommandInternal{ 0x545800, 0x0 };
-	WEAK symbol<const char*(int argIndex)> Cmd_Argv{ 0x467600, 0x0 };
-	WEAK symbol<int()> Cmd_Argc_ADDONE{ 0x5486A0, 0x0 };
-	WEAK symbol<void()> Cbuf_AddServerText_f{ 0x71D130, 0x0 };
+	inline auto& Cmd_AddCommandInternal = pointer<void(const char *cmdName, void (__cdecl *function)(), cmd_function_s *allocedCmd)>(SELECT(0x545DF0, 0x0));
+	inline auto& Cmd_AddServerCommandInternal = pointer<void(const char *cmdName, void (__cdecl *function)(), cmd_function_s *allocedCmd)>(SELECT(0x545800, 0x0));
+	inline auto& Cmd_Argv = pointer<const char*(int argIndex)>(SELECT(0x467600, 0x0));
+	inline auto& Cmd_Argc_ADDONE = pointer<int()>(SELECT(0x5486A0, 0x0));
+	inline auto& Cbuf_AddServerText_f = pointer<void()>(SELECT(0x71D130, 0x0));
 
-	WEAK symbol<const char*(int)> SV_Cmd_Argv{ 0x5455D0, 0x0 };
+	inline auto& SV_Cmd_Argv = pointer<const char*(int)>(SELECT(0x5455D0, 0x0));
 
 
-	WEAK symbol<CmdArgs> sv_cmd_args{ 0x1CAA998, 0x0 };
+	inline auto& sv_cmd_args = pointer<CmdArgs>(SELECT(0x1CAA998, 0x0));
 }

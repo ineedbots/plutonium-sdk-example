@@ -4,7 +4,7 @@ namespace game::t4
 {
 	int Cmd_Argc()
 	{
-		return cmd_args->argc[cmd_args->nesting];
+		return cmd_args.argc[cmd_args.nesting];
 	}
 
 	const char* Cmd_Argv(int param)
@@ -64,13 +64,13 @@ namespace game::t4
 
 		allocedCmd->name = cmdName;
 		allocedCmd->function = function;
-		allocedCmd->next = *cmd_functions;
-		*cmd_functions = allocedCmd;
+		allocedCmd->next = cmd_functions;
+		cmd_functions = allocedCmd;
 	}
 
 	int SV_Cmd_Argc()
 	{
-		return sv_cmd_args->argc[sv_cmd_args->nesting];
+		return sv_cmd_args.argc[sv_cmd_args.nesting];
 	}
 
 	const char* SV_Cmd_Argv(int param)

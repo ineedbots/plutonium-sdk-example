@@ -11,6 +11,7 @@ namespace game
 	{
 		if (!current.has_value())
 		{
+			// plugins can do this at crt init because the exe is loaded into memory before us
 			current =
 				reinterpret_cast<const char*>(0x88A5DC) == "CoDWaW.exe"s ? gamemode::t4sp : (
 				reinterpret_cast<const char*>(0x858648) == "CoDWaW.exe"s ? gamemode::t4mp : (

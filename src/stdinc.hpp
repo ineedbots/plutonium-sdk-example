@@ -35,8 +35,11 @@
 #include <atlcomcli.h>
 #include <variant>
 #include <optional>
+#include <exception>
 #include <Psapi.h>
 #include <timeapi.h>
+#include <array>
+#include <coroutine>
 
 #ifdef max
 #undef max
@@ -45,6 +48,11 @@
 #ifdef min
 #undef min
 #endif
+
+#pragma warning(push)
+#pragma warning(disable: 4100)
+#include <json.hpp>
+#pragma warning(pop)
 
 #pragma comment(lib, "ntdll.lib")
 #pragma comment(lib, "ws2_32.lib")
