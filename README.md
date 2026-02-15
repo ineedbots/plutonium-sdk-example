@@ -49,3 +49,4 @@ docker run --mount type=bind,src="C:\\path\\to\\your\\BO2",dst=/game \
 - mxve (https://github.com/mxve/plutonium-updater.rs)
 - Plutonium Team (https://github.com/plutoniummod/plutonium-sdk)
 - TsudaKageyu (https://github.com/TsudaKageyu/minhook)
+- nlohmann (https://github.com/nlohmann/json)
