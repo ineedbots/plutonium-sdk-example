@@ -51,17 +51,12 @@ workspace "plutonium_plugin_base"
 
 	defines { "_CRT_SECURE_NO_WARNINGS" }
 
-	flags
-	{
-		"MultiProcessorCompile",
-	}
+	multiprocessorcompile "On"
 	
 	filter "configurations:Release"
 		optimize "Full"
 		defines { "NDEBUG" }
-		flags {
-			"FatalCompileWarnings",
-		}
+		fatalwarnings "All"
 	filter {}
 
 	filter "configurations:Debug"
