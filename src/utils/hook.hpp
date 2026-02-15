@@ -67,11 +67,13 @@ namespace utils::hook
 		detour(const detour&) = delete;
 		detour& operator= (const detour&) = delete;
 
-		void enable() const;
-		void disable() const;
+        static void apply_queued();
 
-		void create(void* place, void* target, bool quick = false);
-		void create(size_t place, void* target, bool quick = false);
+        void enable(bool queue = true) const;
+        void disable(bool queue = true) const;
+
+		void create(void* place, void* target, bool queue = true);
+		void create(size_t place, void* target, bool queue = true);
 		void clear();
 
 		template <typename T>

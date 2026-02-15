@@ -28,6 +28,7 @@ namespace plugin
 		this->game_ = game;
 
 		component_loader::on_startup();
+		utils::hook::detour::apply_queued();
 	}
 
 	void plugin::on_shutdown()
