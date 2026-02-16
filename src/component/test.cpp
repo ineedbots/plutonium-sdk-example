@@ -1,5 +1,6 @@
 #include <stdinc.hpp>
 #include "scheduler.hpp"
+#include "callbacks.hpp"
 
 namespace test
 {
@@ -172,16 +173,21 @@ namespace test
 	class component final : public component_interface
 	{
 	public:
-		component()
-		{
-			con::info("test component constructed\n");
-		}
-
 		void on_startup() override
 		{
 			scheduler::on_coro(coro_a);
 			scheduler::on_coro(coro_b);
 			scheduler::on_coro(coro_c);
+
+			callbacks::on_game_init([](int level_time, int restart)
+			{
+				con::info("Game init'd at %d, restart %d\n", level_time, restart);
+			});
+
+			callbacks::on_game_shutdown([](int freeScripts)
+			{
+				con::info("Game shutdown'd, freeScripts: %d\n", freeScripts);
+			});
 
 			if (game::is_iw5())
 			{
