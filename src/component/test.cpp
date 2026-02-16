@@ -3,6 +3,7 @@
 #include "callbacks.hpp"
 #include "gsc.hpp"
 #include "command.hpp"
+#include "clientcommand.hpp"
 
 namespace test
 {
@@ -101,6 +102,11 @@ namespace test
 			scheduler::on_coro(coro_a);
 			scheduler::on_coro(coro_b);
 			scheduler::on_coro(coro_c);
+			
+			clientcommand::add("test", [](int clientNum)
+			{
+				con::info("client %d did clientcommand test\n", clientNum);
+			});
 
 			callbacks::on_game_init([](int level_time, int restart)
 			{
