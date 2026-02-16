@@ -12,6 +12,12 @@ namespace utils::helpers
 		std::string message = vfmt(fmt, args);
 		va_end(args);
 
+		// logger adds newline for us
+		if (message.ends_with('\n'))
+		{
+			message.pop_back();
+		}
+
 		if (plugin::get()->get_interface() != nullptr)
 		{
 			plugin::get()->get_interface()->logging()->info(message);
@@ -29,6 +35,11 @@ namespace utils::helpers
 		std::string message = vfmt(fmt, args);
 		va_end(args);
 
+		if (message.ends_with('\n'))
+		{
+			message.pop_back();
+		}
+
 		if (plugin::get()->get_interface() != nullptr)
 		{
 			plugin::get()->get_interface()->logging()->warn(message);
@@ -45,6 +56,11 @@ namespace utils::helpers
 		va_start(args, fmt);
 		std::string message = vfmt(fmt, args);
 		va_end(args);
+
+		if (message.ends_with('\n'))
+		{
+			message.pop_back();
+		}
 
 		if (plugin::get()->get_interface() != nullptr)
 		{

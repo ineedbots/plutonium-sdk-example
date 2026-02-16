@@ -7,47 +7,47 @@ namespace callbacks
 	{
 	}
 
-	void on_dvar_init(void(*cb)())
+	void on_dvar_init(void(__cdecl* cb)())
 	{
 		plugin::get()->get_interface()->callbacks()->on_dvar_init(cb);
 	}
 
-	void on_after_dvar_init(void(*cb)())
+	void on_after_dvar_init(void(__cdecl* cb)())
 	{
 		plugin::get()->get_interface()->callbacks()->on_after_dvar_init(cb);
 	}
 
-	void on_game_init(void(*cb)(int, int))
+	void on_game_init(void(__cdecl* cb)(int, int))
 	{
 		plugin::get()->get_interface()->callbacks()->on_game_init(cb);
 	}
 
-	void on_game_shutdown(void(*cb)(int))
+	void on_game_shutdown(void(__cdecl* cb)(int))
 	{
 		plugin::get()->get_interface()->callbacks()->on_game_shutdown(cb);
 	}
 
-	void on_player_pre_connect(void(*cb)(unsigned int))
+	void on_player_pre_connect(void(__cdecl* cb)(unsigned int))
 	{
 		plugin::get()->get_interface()->callbacks()->on_player_pre_connect(cb);
 	}
 
-	void on_player_connect(void(*cb)(unsigned int))
+	void on_player_connect(void(__cdecl* cb)(unsigned int))
 	{
 		plugin::get()->get_interface()->callbacks()->on_player_connect(cb);
 	}
 
-	void on_player_disconnect(void(*cb)(unsigned int))
+	void on_player_disconnect(void(__cdecl* cb)(unsigned int))
 	{
 		plugin::get()->get_interface()->callbacks()->on_player_disconnect(cb);
 	}
 
-	void on_scripts_load(void(*cb)())
+	void on_scripts_load(void(__cdecl* cb)())
 	{
 		plugin::get()->get_interface()->callbacks()->on_scripts_load(cb);
 	}
 
-	void on_scripts_execute(void(*cb)())
+	void on_scripts_execute(void(__cdecl* cb)())
 	{
 		plugin::get()->get_interface()->callbacks()->on_scripts_execute(cb);
 	}

@@ -1,90 +1,13 @@
 #include <stdinc.hpp>
 #include "scheduler.hpp"
 #include "callbacks.hpp"
+#include "gsc.hpp"
+#include "command.hpp"
 
 namespace test
 {
 	namespace
 	{
-		namespace iw5
-		{
-			using namespace game::iw5;
-			void add_command(const char* name, void(__cdecl* func)())
-			{
-				auto* func_store = utils::memory::allocate<cmd_function_s>();
-				assert(func_store);
-				Cmd_AddCommandInternal(name, func, func_store);
-			}
-
-			void add_sv_command(const char* name, void(__cdecl* func)())
-			{
-				add_command(name, Cbuf_AddServerText_f);
-
-				auto* func_store = utils::memory::allocate<cmd_function_s>();
-				assert(func_store);
-				Cmd_AddServerCommandInternal(name, func, func_store);
-			}
-		}
-
-		namespace t4
-		{
-			using namespace game::t4;
-			void add_command(const char* name, void(__cdecl* func)())
-			{
-				auto* func_store = utils::memory::allocate<cmd_function_s>();
-				assert(func_store);
-				Cmd_AddCommandInternal(name, func, func_store);
-			}
-
-			void add_sv_command(const char* name, void(__cdecl* func)())
-			{
-				add_command(name, Cbuf_AddServerText_f);
-
-				auto* func_store = utils::memory::allocate<cmd_function_s>();
-				assert(func_store);
-				Cmd_AddServerCommandInternal(name, func, func_store);
-			}
-		}
-
-		namespace t5
-		{
-			using namespace game::t5;
-			void add_command(const char* name, void(__cdecl* func)())
-			{
-				auto* func_store = utils::memory::allocate<cmd_function_s>();
-				assert(func_store);
-				Cmd_AddCommandInternal(name, func, func_store);
-			}
-
-			void add_sv_command(const char* name, void(__cdecl* func)())
-			{
-				add_command(name, Cbuf_AddServerText_f);
-
-				auto* func_store = utils::memory::allocate<cmd_function_s>();
-				assert(func_store);
-				Cmd_AddServerCommandInternal(name, func, func_store);
-			}
-		}
-		namespace t6
-		{
-			using namespace game::t6;
-			void add_command(const char* name, void(__cdecl* func)())
-			{
-				auto* func_store = utils::memory::allocate<cmd_function_s>();
-				assert(func_store);
-				Cmd_AddCommandInternal(name, func, func_store);
-			}
-
-			void add_sv_command(const char* name, void(__cdecl* func)())
-			{
-				add_command(name, Cbuf_AddServerText_f);
-
-				auto* func_store = utils::memory::allocate<cmd_function_s>();
-				assert(func_store);
-				Cmd_AddServerCommandInternal(name, func, func_store);
-			}
-		}
-
 		scheduler::coro_promise coro_c()
 		{
 			auto* self = co_await scheduler::coro_self();
@@ -189,19 +112,29 @@ namespace test
 				con::info("Game shutdown'd, freeScripts: %d\n", freeScripts);
 			});
 
+			gsc::function::add("test_func", []()
+			{
+				con::info("test_func was called\n");
+			});
+
+			gsc::method::add("test_meth", [](gsc::method::scr_entref_t entref)
+			{
+				con::info("test_method was called on ent type %d, ent num %d\n", entref.classnum, entref.entnum);
+			});
+
 			if (game::is_iw5())
 			{
 				assert(game::is_mp());
 
 				// game should init before we add commands
-				plugin::get()->get_interface()->callbacks()->on_after_dvar_init([]()
+				callbacks::on_after_dvar_init([]()
 				{
-					iw5::add_command("test_func", []()
+					command::add("test_func", []()
 					{
 						con::info("test_func was called with %d args %s\n", game::iw5::Cmd_Argc(), game::iw5::Cmd_Argv(0));
 					});
 
-					iw5::add_sv_command("test_func2", []()
+					command::add_sv("test_func2", []()
 					{
 						con::info("test_func2 was called with %d args %s\n", game::iw5::SV_Cmd_Argc(), game::iw5::SV_Cmd_Argv(0));
 					});
@@ -210,14 +143,14 @@ namespace test
 
 			if (game::is_t4())
 			{
-				plugin::get()->get_interface()->callbacks()->on_after_dvar_init([]()
+				callbacks::on_after_dvar_init([]()
 				{
-					t4::add_command("test_func", []()
+					command::add("test_func", []()
 					{
 						con::info("test_func was called with %d args %s\n", game::t4::Cmd_Argc(), game::t4::Cmd_Argv(0));
 					});
 
-					t4::add_sv_command("test_func2", []()
+					command::add_sv("test_func2", []()
 					{
 						con::info("test_func2 was called with %d args %s\n", game::t4::SV_Cmd_Argc(), game::t4::SV_Cmd_Argv(0));
 					});
@@ -226,14 +159,14 @@ namespace test
 
 			if (game::is_t5())
 			{
-				plugin::get()->get_interface()->callbacks()->on_after_dvar_init([]()
+				callbacks::on_after_dvar_init([]()
 				{
-					t5::add_command("test_func", []()
+					command::add("test_func", []()
 					{
 						con::info("test_func was called with %d args %s\n", game::t5::Cmd_Argc(), game::t5::Cmd_Argv(0));
 					});
 
-					t5::add_sv_command("test_func2", []()
+					command::add_sv("test_func2", []()
 					{
 						con::info("test_func2 was called with %d args %s\n", game::t5::SV_Cmd_Argc(), game::t5::SV_Cmd_Argv(0));
 					});
@@ -242,14 +175,14 @@ namespace test
 
 			if (game::is_t6())
 			{
-				plugin::get()->get_interface()->callbacks()->on_after_dvar_init([]()
+				callbacks::on_after_dvar_init([]()
 				{
-					t6::add_command("test_func", []()
+					command::add("test_func", []()
 					{
 						con::info("test_func was called with %d args %s\n", game::t6::Cmd_Argc(), game::t6::Cmd_Argv(0));
 					});
 
-					t6::add_sv_command("test_func2", []()
+					command::add_sv("test_func2", []()
 					{
 						con::info("test_func2 was called with %d args %s\n", game::t6::SV_Cmd_Argc(), game::t6::SV_Cmd_Argv(0));
 					});
