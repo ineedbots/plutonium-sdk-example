@@ -5,10 +5,9 @@
 
 namespace game
 {
-	std::optional<gamemode> current;
-
 	gamemode get_gamemode()
 	{
+		static std::optional<gamemode> current{};
 		if (!current.has_value())
 		{
 			// plugins can do this at crt init because the exe is loaded into memory before us

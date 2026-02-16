@@ -40,6 +40,7 @@
 #include <timeapi.h>
 #include <array>
 #include <coroutine>
+#include <concepts>
 
 #ifdef max
 #undef max

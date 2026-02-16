@@ -14,6 +14,7 @@ namespace game::t4
 
 	inline auto& Cbuf_AddServerText_f = pointer<void()>(SELECT(0x46C790, 0x52D8E0));
 	inline auto& Com_Printf = pointer<void(con_channel_e code, const char* fmt, ...)>(SELECT(0x562490, 0x59A2C0));
+	inline auto& Com_Error = pointer<void(errorParm_t code, const char* fmt, ...)>(SELECT(0x562DA0, 0x59AC50));
 
 
 	inline auto& cmd_args = pointer<CmdArgs>(SELECT(0x22236F8, 0x1F41670));

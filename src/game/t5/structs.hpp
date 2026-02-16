@@ -2,6 +2,17 @@
 
 namespace game::t5
 {
+	enum errorParm_t
+	{
+		ERR_FATAL = 0x0,
+		ERR_DROP = 0x1,
+		ERR_SERVERDISCONNECT = 0x2,
+		ERR_DISCONNECT = 0x3,
+		ERR_SCRIPT = 0x4,
+		ERR_SCRIPT_DROP = 0x5,
+		ERR_LOCALIZATION = 0x6,
+	};
+
 	struct cmd_function_s
 	{
 		cmd_function_s *next;

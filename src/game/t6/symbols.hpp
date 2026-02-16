@@ -10,6 +10,7 @@ namespace game::t6
 	inline auto& Cmd_Argv = pointer<const char*(int argIndex)>(SELECT(0x5608F0, 0x6B3D40));
 	inline auto& Cmd_Argc = pointer<int()>(SELECT(0x5EA650, 0x4BE4B0));
 	inline auto& Cbuf_AddServerText_f = pointer<void()>(SELECT(0x909DA0, 0xA30D90));
+	inline auto& Com_Error = pointer<void(errorParm_t code, const char* fmt, ...)>(SELECT(0x58FC30, 0x6013A0));
 
 	inline auto& SV_Cmd_Argv = pointer<const char*(int)>(SELECT(0x6DBF80, 0x520F20));
 	inline auto& SV_Cmd_Argc = pointer<int()>(SELECT(0x5A81B0, 0x6BCAE0));

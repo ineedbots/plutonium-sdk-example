@@ -12,6 +12,7 @@ namespace game::iw5
 	inline auto& Cmd_Argv = pointer<const char*(int argIndex)>(SELECT(0x467600, 0x0));
 	inline auto& Cmd_Argc_ADDONE = pointer<int()>(SELECT(0x5486A0, 0x0));
 	inline auto& Cbuf_AddServerText_f = pointer<void()>(SELECT(0x71D130, 0x0));
+	inline auto& Com_Error = pointer<void(errorParm_t code, const char* fmt, ...)>(SELECT(0x555450, 0x0));
 
 	inline auto& SV_Cmd_Argv = pointer<const char*(int)>(SELECT(0x5455D0, 0x0));
 
