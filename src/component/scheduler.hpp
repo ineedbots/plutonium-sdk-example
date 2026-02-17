@@ -108,6 +108,8 @@ namespace scheduler
 			{
 			}
 
+			auto yield_value(auto) = delete;
+
 			std::suspend_always final_suspend() noexcept
 			{
 				return {};
