@@ -12,37 +12,37 @@
 
 struct pushfd_s
 {
-    volatile unsigned int CF : 1; // Carry
-    volatile unsigned int : 1;
-    volatile unsigned int PF : 1; // Parity
-    volatile unsigned int : 1;
-    volatile unsigned int AF : 1; // Auxiliary Carry 
-    volatile unsigned int : 1;
-    volatile unsigned int ZF : 1; // Zero
-    volatile unsigned int SF : 1; // Sign
-    volatile unsigned int TF : 1; // Trap
-    volatile unsigned int IF : 1; // Interrupt enable
-    volatile unsigned int DF : 1; // Direction
-    volatile unsigned int OF : 1; // Overflow
-    volatile unsigned int pad : 20;
+	volatile unsigned int CF : 1; // Carry
+	volatile unsigned int : 1;
+	volatile unsigned int PF : 1; // Parity
+	volatile unsigned int : 1;
+	volatile unsigned int AF : 1; // Auxiliary Carry 
+	volatile unsigned int : 1;
+	volatile unsigned int ZF : 1; // Zero
+	volatile unsigned int SF : 1; // Sign
+	volatile unsigned int TF : 1; // Trap
+	volatile unsigned int IF : 1; // Interrupt enable
+	volatile unsigned int DF : 1; // Direction
+	volatile unsigned int OF : 1; // Overflow
+	volatile unsigned int pad : 20;
 };
 
 struct pushad_s
 {
-    volatile size_t EDI;
-    volatile size_t ESI;
-    volatile size_t EBP;
-    volatile size_t ESP;
-    volatile size_t EBX;
-    volatile size_t EDX;
-    volatile size_t ECX;
-    volatile size_t EAX;
+	volatile size_t EDI;
+	volatile size_t ESI;
+	volatile size_t EBP;
+	volatile size_t ESP;
+	volatile size_t EBX;
+	volatile size_t EDX;
+	volatile size_t ECX;
+	volatile size_t EAX;
 };
 
 typedef volatile size_t retaddr_t;
 
 #define popad_esp   \
-        popad       \
+		popad       \
   __asm mov esp, [esp - 0x14]
 
 #define ASSERT_STRUCT_SIZE(structure, size) static_assert(sizeof(structure) == size, "sizeof(" #structure ") != " #size);
