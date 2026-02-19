@@ -78,10 +78,10 @@ namespace utils::hook
 		this->clear();
 	}
 
-    void detour::apply_queued()
-    {
-        MH_ApplyQueued();
-    }
+	void detour::apply_queued()
+	{
+		MH_ApplyQueued();
+	}
 
 	void detour::enable(bool queue) const
 	{
@@ -89,7 +89,7 @@ namespace utils::hook
 		{
 			if (queue)
 			{
-                MH_QueueEnableHook(this->place_);
+				MH_QueueEnableHook(this->place_);
 			}
 			else
 			{
@@ -104,7 +104,7 @@ namespace utils::hook
 		{
 			if (queue)
 			{
-                MH_QueueDisableHook(this->place_);
+				MH_QueueDisableHook(this->place_);
 			}
 			else
 			{

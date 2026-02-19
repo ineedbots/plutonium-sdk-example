@@ -5,36 +5,24 @@ namespace scheduler
 {
 	namespace
 	{
-        struct task
-        {
-            std::function<scheduler::evaluation()> callback;
-            std::chrono::milliseconds interval;
-            std::chrono::high_resolution_clock::time_point last_call;
-            int priority;
-        };
+		struct task
+		{
+			std::function<scheduler::evaluation()> callback;
+			std::chrono::milliseconds interval;
+			std::chrono::high_resolution_clock::time_point last_call;
+			int priority;
+		};
 
-        std::array<std::mutex, scheduler::thread::count> mutexes_;
-        std::array<std::vector<task>, scheduler::thread::count> tasks_queue_; // tasks to be added to active vector
-        std::array<std::vector<task>, scheduler::thread::count> tasks_; // active tasks vector
+		std::array<std::mutex, scheduler::thread::count> mutexes_;
+		std::array<std::vector<task>, scheduler::thread::count> tasks_queue_; // tasks to be added to active vector
+		std::array<std::vector<task>, scheduler::thread::count> tasks_; // active tasks vector
 
-        struct coro_task
-        {
-            scheduler::coro_promise promise;
-            std::function<scheduler::coro_promise()> coroutine; // for lambda capture
-            int priority;
-        };
+		std::mutex error_mutex_;
+		using error_task_ = std::pair<std::string, int>;
+		std::queue<error_task_> errors_;
 
-        std::array<std::mutex, scheduler::thread::count> coro_mutexes_;
-        std::array<std::vector<std::pair<std::function<scheduler::coro_promise()>, int>>, scheduler::thread::count> coro_tasks_queue_; // task to be added to active vector
-        std::array<std::vector<coro_task>, scheduler::thread::count> coro_tasks_; // active tasks vector
-        std::array<std::vector<std::pair<std::string, std::shared_ptr<std::any>>>, scheduler::thread::count> coro_notify_queue_; // pending notifies
-
-        std::mutex error_mutex_;
-        using error_task_ = std::pair<std::string, int>;
-        std::queue<error_task_> errors_;
-
-        std::thread async_thread_;
-        std::atomic<bool>(async_kill_) = false;
+		std::thread async_thread_;
+		std::atomic<bool>(async_kill_) = false;
 
 		bool get_next_error(const char** error_message, int* error_code, scheduler::thread thread_)
 		{
@@ -131,166 +119,311 @@ namespace scheduler
 			});
 		}
 
-		void check_coroutines(const scheduler::thread thread_)
+		namespace coro_
 		{
-			assert(thread_ < scheduler::thread::count);
-			auto& coro_tasks = coro_tasks_[thread_];
-
-			// check for new tasks to add
-			const auto pop_a_task = [thread_]() -> std::optional<std::pair<std::function<scheduler::coro_promise()>, int>>
+			struct task
 			{
-				std::lock_guard _(coro_mutexes_[thread_]);
-				auto& coro_task_queue = coro_tasks_queue_[thread_];
-
-				if (coro_task_queue.empty())
-				{
-					return {};
-				}
-
-				auto coro_task = coro_task_queue.back();
-				coro_task_queue.pop_back();
-				return coro_task;
+				scheduler::coro::promise promise;
+				std::function<scheduler::coro::promise()> coroutine; // for lambda capture
 			};
-			auto coro_task_opt = pop_a_task();
 
-			auto needs_sorting = false;
-			while (coro_task_opt.has_value())
+			std::array<std::mutex, scheduler::thread::count> mutexes_;
+			std::array<std::vector<std::function<scheduler::coro::promise()>>, scheduler::thread::count> tasks_queue_; // task to be added to active vector
+			std::array<std::vector<std::pair<std::string, std::shared_ptr<std::any>>>, scheduler::thread::count> notify_queue_; // pending notifies
+			std::array<DWORD, scheduler::thread::count> thread_ids_{};
+			std::array<std::list<task>, scheduler::thread::count> tasks_; // active tasks
+
+			bool process_notify(const scheduler::thread thread_, const std::string& notify, std::shared_ptr<std::any>& result)
 			{
-				needs_sorting = true;
+				assert(thread_ < scheduler::thread::count);
 
-				auto& [coro, priority] = coro_task_opt.value();
-
-				// CP.51: Do not use capturing lambdas that are coroutines; they are not guaranteed to be safe across suspension points.
-				// initial_suspend is suspend_never, so your coroutines can store the lambda captures into local variables before the first suspension point (their co_await)
-				// this also sucks, cause the priorty is not respected until after the first suspension point, but its better than the alternative of not being able to use lambda captures at all
-				auto promise = coro();
-				if (!promise.done())
-				{
-					// is this bugged? even though the lambda is stored on the coro_task struct (which it is inside the coro_tasks vector), the lambda capture is still not safe to be used after a coroutine suspension point
-					// the coroutine doesnt seem to properly restore the lambda capture (even though it still exists (as stated above)); is it not a feature of c++ or msvc missing it?
-					coro_tasks.emplace_back(std::move(promise), std::move(coro), priority);
-				}
-
-				coro_task_opt = pop_a_task();
-			}
-
-			if (needs_sorting)
-			{
-				std::ranges::sort(coro_tasks, [](const coro_task& left, const coro_task& right) -> int
-				{
-					return left.priority > right.priority;
-				});
-			}
-
-
-			// handle notifes
-			const auto pop_a_notify = [thread_]() -> std::optional<std::pair<std::string, std::shared_ptr<std::any>>>
-			{
-				std::lock_guard _(coro_mutexes_[thread_]);
-				auto& coro_notify_queue = coro_notify_queue_[thread_];
-
-				if (coro_notify_queue.empty())
-				{
-					return {};
-				}
-
-				auto coro_notify = coro_notify_queue.back();
-				coro_notify_queue.pop_back();
-				return coro_notify;
-			};
-			auto coro_notify_opt = pop_a_notify();
-
-			while (coro_notify_opt.has_value())
-			{
-				auto& [notify, result] = *coro_notify_opt;
+				auto processed_a_notify = false;
 
 				// apply the notify to each active task
-				for (auto& coro_task : coro_tasks)
+				for (const auto& task_ : tasks_[thread_])
 				{
-					if (coro_task.promise.done())
+					auto& promise = task_.promise;
+					if (promise.done())
 					{
 						continue;
 					}
 
 					// kill the coros who have the notify in their endon list
-					const auto& endon_list = coro_task.promise.get_endon_list();
+					const auto& endon_list = promise.get_endon_list();
 					if (std::ranges::find(endon_list, notify) != endon_list.end())
 					{
-						coro_task.promise.kill();
+						processed_a_notify = true;
+						promise.kill();
 						continue;
 					}
 
 					// wake up coros that are waiting for the notify
-					if (!coro_task.promise.is_waittill() || !coro_task.promise.is_waiting_for_waittill())
+					if (promise.running() || !promise.is_waittill() || !promise.is_waiting_for_waittill())
 					{
 						continue;
 					}
 
 					// a blank waittill will be woken by anything
-					const auto& waittill = coro_task.promise.get_waittill();
+					const auto& waittill = promise.get_waittill();
 					if (!waittill.empty() && waittill != notify)
 					{
 						continue;
 					}
 
-					coro_task.promise.resolve_waittill(result);
+					processed_a_notify = true;
+					promise.resolve_waittill(result);
 				}
 
-				coro_notify_opt = pop_a_notify();
+				return processed_a_notify;
 			}
 
-
-			// run the coros that need to run, delete the completed ones
-			std::erase_if(coro_tasks, [](coro_task& coro_task_) -> bool
+			bool process_task(const scheduler::thread thread_, std::function<coro::promise()>&& coro)
 			{
-				auto& promise = coro_task_.promise;
-				if (promise.done())
+				assert(thread_ < scheduler::thread::count);
+
+				// CP.51: Do not use capturing lambdas that are coroutines; they are not guaranteed to be safe across suspension points.
+				// initial_suspend is suspend_never, so your coroutines can store the lambda captures into local variables before the first suspension point (their co_await)
+				auto promise = coro();
+				if (!promise.done())
 				{
-					promise.cleanup();
+					// is this bugged? even though the lambda is stored on the coro_task struct (which it is inside the coro_tasks vector), the lambda capture is still not safe to be used after a coroutine suspension point
+					// the coroutine doesnt seem to properly restore the lambda capture (even though it still exists (as stated above)); is it not a feature of c++ or msvc missing it?
+					tasks_[thread_].emplace_back(std::move(promise), std::move(coro));
 					return true;
 				}
 
-				if (promise.is_waittill())
+				promise.cleanup();
+				return false;
+			}
+
+			void check_coroutines(const scheduler::thread thread_)
+			{
+				assert(thread_ < scheduler::thread::count);
+
+				if (!thread_ids_[thread_])
 				{
-					if (promise.is_waiting_for_waittill())
-					{
-						return false;
-					}
+					thread_ids_[thread_] = GetCurrentThreadId();
 				}
-				else
+
+				const auto process_pending_tasks = [&thread_]() -> bool
 				{
+					const auto pop_a_task = [&thread_]() -> std::optional<std::function<coro::promise()>>
+					{
+						std::lock_guard _(mutexes_[thread_]);
+						auto& coro_task_queue = tasks_queue_[thread_];
+
+						if (coro_task_queue.empty())
+						{
+							return {};
+						}
+
+						auto coro_task = coro_task_queue.back();
+						coro_task_queue.pop_back();
+						return coro_task;
+					};
+
+					auto had_task = false;
+					auto coro_task_opt = pop_a_task();
+					while (coro_task_opt.has_value())
+					{
+						had_task = true;
+
+						process_task(thread_, std::move(*coro_task_opt));
+
+						coro_task_opt = pop_a_task();
+					}
+
+					return had_task;
+				};
+
+				const auto process_pending_notifies = [&thread_]()
+				{
+					const auto pop_a_notify = [&thread_]() -> std::optional<std::pair<std::string, std::shared_ptr<std::any>>>
+					{
+						std::lock_guard _(mutexes_[thread_]);
+						auto& coro_notify_queue = notify_queue_[thread_];
+
+						if (coro_notify_queue.empty())
+						{
+							return {};
+						}
+
+						auto coro_notify = coro_notify_queue.back();
+						coro_notify_queue.pop_back();
+						return coro_notify;
+					};
+
+					auto had_notify = false;
+					auto coro_notify_opt = pop_a_notify();
+					while (coro_notify_opt.has_value())
+					{
+						had_notify = true;
+
+						process_notify(thread_, coro_notify_opt->first, coro_notify_opt->second);
+
+						coro_notify_opt = pop_a_notify();
+					}
+
+					return had_notify;
+				};
+
+				process_pending_tasks();
+				process_pending_notifies();
+
+				// run the delay tasks
+				auto count = tasks_[thread_].size();
+				auto i = 0u;
+				for (const auto& task_ : tasks_[thread_])
+				{
+					if (i++ >= count)
+					{
+						break;
+					}
+
+					auto& promise = task_.promise;
+					if (promise.done())
+					{
+						continue;
+					}
+
+					assert(!promise.running());
+					if (promise.is_waittill() || promise.is_frame_end())
+					{
+						continue;
+					}
+
 					if (std::chrono::high_resolution_clock::now() - promise.get_last_call() < promise.get_delay())
 					{
-						return false;
+						continue;
+					}
+
+					promise.resume();
+				}
+
+				// run the others
+				while (true)
+				{
+					auto ran_something = false;
+					for (const auto& task_ : tasks_[thread_])
+					{
+						auto& promise = task_.promise;
+						if (promise.done())
+						{
+							continue;
+						}
+
+						assert(!promise.running());
+						if (promise.is_waittill())
+						{
+							if (promise.is_waiting_for_waittill())
+							{
+								continue;
+							}
+						}
+						else if (!promise.is_frame_end(false))
+						{
+							continue;
+						}
+
+						ran_something = true;
+						promise.resume();
+					}
+
+					if (!ran_something)
+					{
+						break;
 					}
 				}
 
-				promise.resume();
-				if (promise.done())
+				// cleanup
+				std::erase_if(tasks_[thread_], [](task& task_) -> bool
 				{
-					promise.cleanup();
-					return true;
-				}
+					auto& promise = task_.promise;
+					if (promise.done())
+					{
+						promise.cleanup();
+						return true;
+					}
 
-				return false;
-			});
+					return false;
+				});
+			}
 		}
 
 		void execute_for_thread(const scheduler::thread thread_)
 		{
-			check_coroutines(thread_);
 			check_for_errors(thread_);
+			coro_::check_coroutines(thread_);
 			execute(thread_);
 		}
 	}
 
-	void coro_wait::await_suspend(std::coroutine_handle<> h) const
+	namespace coro
 	{
-		auto& promise = std::coroutine_handle<coro_promise::promise_type>::from_address(h.address()).promise();
+		void delay::await_suspend(std::coroutine_handle<> h)
+		{
+			auto& promise = promise::handle::from_address(h.address()).promise();
 
-		promise._data.delay = _delay;
-		promise._data.is_waittill = false;
-		promise._data.lastcall = std::chrono::high_resolution_clock::now();
+			promise._data.delay = _delay;
+			promise._data.is_waittill = false;
+			promise._data.lastcall = std::chrono::high_resolution_clock::now();
+		}
+
+		void on(std::function<promise()>&& coroutine, thread thread_)
+		{
+			assert(thread_ < thread::count);
+
+			if (coro_::thread_ids_[thread_] == GetCurrentThreadId())
+			{
+				coro_::process_task(thread_, std::move(coroutine));
+			}
+			else
+			{
+				std::lock_guard _(coro_::mutexes_[thread_]);
+				coro_::tasks_queue_[thread_].emplace_back(std::move(coroutine));
+			}
+		}
+
+		void notify(const char* notify, std::shared_ptr<std::any> result, thread thread_)
+		{
+			auto currentThreadId = GetCurrentThreadId();
+
+			const auto one_thread = [&currentThreadId, &notify, &result](thread thread_)
+			{
+				assert(thread_ < thread::count);
+				if (coro_::thread_ids_[thread_] == currentThreadId)
+				{
+					coro_::process_notify(thread_, notify, result);
+				}
+				else
+				{
+					std::lock_guard _(coro_::mutexes_[thread_]);
+
+					// queue too big... is the thread not running?
+					if (coro_::notify_queue_[thread_].size() < 1024)
+					{
+						coro_::notify_queue_[thread_].emplace_back(notify, result);
+					}
+				}
+			};
+
+			if (thread_ == thread::count)
+			{
+				for (auto i = 0u; i < thread::count; i++)
+				{
+					one_thread(static_cast<scheduler::thread>(i));
+				}
+			}
+			else
+			{
+				one_thread(thread_);
+			}
+		}
+
+		void notify(const char* notifystr, thread thread_)
+		{
+			notify(notifystr, std::shared_ptr<std::any>{}, thread_);
+		}
 	}
 
 	void every(std::function<evaluation()>&& callback, const std::chrono::milliseconds interval, const thread thread_, int priority)
@@ -341,25 +474,6 @@ namespace scheduler
 	{
 		std::lock_guard _(error_mutex_);
 		errors_.emplace(message, level);
-	}
-
-	void on_coro(std::function<coro_promise()>&& coroutine, thread thread_, int priority)
-	{
-		assert(thread_ < thread::count);
-
-		std::lock_guard _(coro_mutexes_[thread_]);
-		coro_tasks_queue_[thread_].emplace_back(std::move(coroutine), priority);
-	}
-
-	void coro_notify(const char* notify, std::shared_ptr<std::any> result)
-	{
-		for (auto thread_ = 0u; thread_ < thread::count; thread_++)
-		{
-			assert(thread_ < thread::count);
-
-			std::lock_guard _(coro_mutexes_[thread_]);
-			coro_notify_queue_[thread_].emplace_back(notify, result);
-		}
 	}
 
 	class component final : public component_interface

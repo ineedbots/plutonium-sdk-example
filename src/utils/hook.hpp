@@ -67,10 +67,10 @@ namespace utils::hook
 		detour(const detour&) = delete;
 		detour& operator= (const detour&) = delete;
 
-        static void apply_queued();
+		static void apply_queued();
 
-        void enable(bool queue = true) const;
-        void disable(bool queue = true) const;
+		void enable(bool queue = true) const;
+		void disable(bool queue = true) const;
 
 		void create(void* place, void* target, bool queue = true);
 		void create(size_t place, void* target, bool queue = true);
