@@ -124,11 +124,11 @@ namespace scheduler
 			struct task
 			{
 				scheduler::coro::promise promise;
-				std::function<scheduler::coro::promise()> coroutine; // for lambda capture
+				std::function<scheduler::coro::promise(unsigned long long)> coroutine; // for lambda capture
 			};
 
 			std::array<std::mutex, scheduler::thread::count> mutexes_;
-			std::array<std::vector<std::function<scheduler::coro::promise()>>, scheduler::thread::count> tasks_queue_; // task to be added to active vector
+			std::array<std::vector<std::pair<unsigned long long, std::function<scheduler::coro::promise(unsigned long long)>>>, scheduler::thread::count> tasks_queue_; // task to be added to active vector
 			std::array<std::vector<std::pair<std::string, std::shared_ptr<std::any>>>, scheduler::thread::count> notify_queue_; // pending notifies
 			std::array<DWORD, scheduler::thread::count> thread_ids_{};
 			std::array<std::list<task>, scheduler::thread::count> tasks_; // active tasks
@@ -177,13 +177,13 @@ namespace scheduler
 				return processed_a_notify;
 			}
 
-			bool process_task(const scheduler::thread thread_, std::function<coro::promise()>&& coro)
+			bool process_task(const scheduler::thread thread_, unsigned long long id, std::function<coro::promise(unsigned long long)>&& coro)
 			{
 				assert(thread_ < scheduler::thread::count);
 
 				// CP.51: Do not use capturing lambdas that are coroutines; they are not guaranteed to be safe across suspension points.
 				// initial_suspend is suspend_never, so your coroutines can store the lambda captures into local variables before the first suspension point (their co_await)
-				auto promise = coro();
+				auto promise = coro(id);
 				if (!promise.done())
 				{
 					// is this bugged? even though the lambda is stored on the coro_task struct (which it is inside the coro_tasks vector), the lambda capture is still not safe to be used after a coroutine suspension point
@@ -207,7 +207,7 @@ namespace scheduler
 
 				const auto process_pending_tasks = [&thread_]() -> bool
 				{
-					const auto pop_a_task = [&thread_]() -> std::optional<std::function<coro::promise()>>
+					const auto pop_a_task = [&thread_]() -> std::optional<std::pair<unsigned long long, std::function<coro::promise(unsigned long long)>>>
 					{
 						std::lock_guard _(mutexes_[thread_]);
 						auto& coro_task_queue = tasks_queue_[thread_];
@@ -228,7 +228,7 @@ namespace scheduler
 					{
 						had_task = true;
 
-						process_task(thread_, std::move(*coro_task_opt));
+						process_task(thread_, coro_task_opt->first, std::move(coro_task_opt->second));
 
 						coro_task_opt = pop_a_task();
 					}
@@ -369,19 +369,24 @@ namespace scheduler
 			promise._data.lastcall = std::chrono::high_resolution_clock::now();
 		}
 
-		void on(std::function<promise()>&& coroutine, thread thread_)
+		unsigned long long on(std::function<promise(unsigned long long)>&& coroutine, thread thread_)
 		{
 			assert(thread_ < thread::count);
 
+			static std::atomic<unsigned long long> s_id = 0;
+			auto _id = s_id++;
+
 			if (coro_::thread_ids_[thread_] == GetCurrentThreadId())
 			{
-				coro_::process_task(thread_, std::move(coroutine));
+				coro_::process_task(thread_, _id, std::move(coroutine));
 			}
 			else
 			{
 				std::lock_guard _(coro_::mutexes_[thread_]);
-				coro_::tasks_queue_[thread_].emplace_back(std::move(coroutine));
+				coro_::tasks_queue_[thread_].emplace_back(_id, std::move(coroutine));
 			}
+
+			return _id;
 		}
 
 		void notify(const char* notify, std::shared_ptr<std::any> result, thread thread_)

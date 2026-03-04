@@ -59,17 +59,6 @@ namespace scheduler
 						endon_list.emplace(endon);
 					}
 
-					unsigned long long id() const
-					{
-						return _id;
-					}
-
-					data()
-					{
-						static std::atomic<unsigned long long> s_id = 0;
-						_id = s_id++;
-					}
-
 				private:
 					std::exception_ptr exception = nullptr;
 					bool is_waittill = false;
@@ -79,7 +68,6 @@ namespace scheduler
 					std::shared_ptr<std::any> waittill_result{};
 					std::unordered_set<std::string> endon_list{};
 					std::chrono::high_resolution_clock::time_point lastcall;
-					unsigned long long _id = 0;
 					bool killed = false;
 					bool is_frame_end = false;
 					bool running = false;
@@ -308,11 +296,11 @@ namespace scheduler
 					}
 					catch (const std::exception& e)
 					{
-						con::error("%llu coro unhandled_exception: %s\n", promise._data.id(), e.what());
+						con::error("%coro unhandled_exception: %s\n", e.what());
 					}
 					catch (...)
 					{
-						con::error("%llu coro unhandled_exception (unknown type)\n", promise._data.id());
+						con::error("coro unhandled_exception (unknown type)\n");
 					}
 
 					std::rethrow_exception(exception);
@@ -396,7 +384,7 @@ namespace scheduler
 		}
 
 		// make sure if you are using lambda captures to store them locally to the coroutine before the first co_await
-		void on(std::function<promise()>&& coroutine, thread thread = main);
+		unsigned long long on(std::function<promise(unsigned long long id)>&& coroutine, thread thread = main);
 	}
 
 	void on_frame(std::function<void()>&& callback, thread thread = main, int priorty = 0);

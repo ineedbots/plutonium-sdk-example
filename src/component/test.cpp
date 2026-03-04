@@ -9,68 +9,67 @@ namespace test
 {
 	namespace
 	{
-		scheduler::coro::promise coro_b()
+		scheduler::coro::promise coro_b(unsigned long long id)
 		{
 			auto* self = co_await scheduler::coro::self();
 			self->endon("end me");
 			co_await 5s;
 
-			con::info("%llu sending test\n", self->id());
+			con::info("%llu sending test\n", id);
 			scheduler::coro::notify("test");
 			co_await 1s;
 
-			con::info("%llu sending test2 5\n", self->id());
+			con::info("%llu sending test2 5\n", id);
 			scheduler::coro::notify<int>("test2", 5);
 			co_await 1s;
 
-			con::info("%llu sending test3 yo\n", self->id());
+			con::info("%llu sending test3 yo\n", id);
 			scheduler::coro::notify<std::string>("test3", "yo");
 			co_await 1s;
 
-			con::info("%llu sending a\n", self->id());
+			con::info("%llu sending a\n", id);
 			scheduler::coro::notify("a");
 			co_await 1s;
 
 			std::string awd = "awd";
-			con::info("%llu sending %s\n", self->id(), awd.c_str());
+			con::info("%llu sending %s\n", id, awd.c_str());
 			scheduler::coro::notify(awd.c_str());
-			con::info("%llu done\n", self->id());
+			con::info("%llu done\n", id);
 
 			while (1)
 			{
 				co_await 1s;
 
-				con::info("%llu waiting to die\n", self->id());
+				con::info("%llu waiting to die\n", id);
 			}
 		}
 		
-		scheduler::coro::promise coro_a()
+		scheduler::coro::promise coro_a(unsigned long long id)
 		{
-			auto* self = co_await scheduler::coro::self();
 			co_await scheduler::coro::waittill<void>("test");
-			con::info("%llu recv test\n", self->id());
+			con::info("%llu recv test\n", id);
 
 			auto i = co_await scheduler::coro::waittill<int>("test2");
-			con::info("%llu recv test2 %d\n", self->id(), i);
+			con::info("%llu recv test2 %d\n", id, i);
 
 			auto s = co_await scheduler::coro::waittill<std::string>("test3");
-			con::info("%llu recv test3 %s\n", self->id(), s.c_str());
+			con::info("%llu recv test3 %s\n", id, s.c_str());
 
 			co_await "a";
-			con::info("%llu recv a\n", self->id());
+			con::info("%llu recv a\n", id);
 
 			std::string awd = "awd";
 			co_await awd;
-			con::info("%llu recv %s\n", self->id(), awd.c_str());
+			con::info("%llu recv %s\n", id, awd.c_str());
 
 			co_await scheduler::coro::delay{ 100ms };
 			co_await 100ms;
 			co_await scheduler::coro::frame();
 
-			con::info("%llu done\n", self->id());
+			con::info("%llu done\n", id);
 			co_await 5s;
 
-			con::info("%llu sending end me\n", self->id());
+			con::info("%llu sending end me\n", id);
 			std::array<std::string, 5> arr{};
 			arr[0] = "awoijdawoidjaiowjd";
 			arr[1] = "90yrji095hjk";
@@ -82,7 +81,7 @@ namespace test
 		}
 
 		int count = 0;
-		scheduler::coro::promise coro_only_one()
+		scheduler::coro::promise coro_only_one(unsigned long long id)
 		{
 			auto* self = co_await scheduler::coro::self();
 
@@ -93,7 +92,7 @@ namespace test
 			{
 				co_await 1s;
 
-				con::info("%llu there can only be one\n", self->id());
+				con::info("%llu there can only be one\n", id);
 
 				if (count++ < 5)
 				{
@@ -116,26 +115,24 @@ namespace test
 			scheduler::coro::on(coro_b);
 
 			std::string lol = "lol";
-			scheduler::coro::on([lc_lol = lol]() -> scheduler::coro::promise
+			scheduler::coro::on([lc_lol = lol](unsigned long long id) -> scheduler::coro::promise
 			{
 				// make sure to get lambda captures by value into the stack of your coroutine before a suspention point (co_await)
 				auto lol = lc_lol;
 
-				auto* self = co_await scheduler::coro::self();
 				auto i = co_await scheduler::coro::waittill<std::array<std::string, 5>>("end me");
 
-				con::info("%llu recv end me and done %s\n", self->id(), lol.c_str());
+				con::info("%llu recv end me and done %s\n", id, lol.c_str());
 				for (const auto& s : i)
 				{
-					con::info("%llu %s\n", self->id(), s.c_str());
+					con::info("%llu %s\n", id, s.c_str());
 				}
 			});
 
 			scheduler::coro::on(coro_only_one);
 
-			scheduler::coro::on([]() -> scheduler::coro::promise
+			scheduler::coro::on([](unsigned long long id) -> scheduler::coro::promise
 			{
-				auto* self = co_await scheduler::coro::self();
 				co_await 3s;
 
 				for (auto i = 0; i < 10; i++)
@@ -144,38 +141,31 @@ namespace test
 					scheduler::coro::notify<int>("did you get it", i);
 				}
 
-				scheduler::coro::on([]() -> scheduler::coro::promise
+				scheduler::coro::on([](unsigned long long id) -> scheduler::coro::promise
 				{
-					auto* self = co_await scheduler::coro::self();
 					auto l = co_await scheduler::coro::waittill<std::string>("mee");
-					con::info("%llu recv mee %s\n", self->id(), l.c_str());
+					con::info("%llu recv mee %s\n", id, l.c_str());
 				});
 
-				con::info("%llu send mee\n", self->id());
+				con::info("%llu send mee\n", id);
 				scheduler::coro::notify<std::string>("mee", "yooooo");
 			});
 
-			scheduler::coro::on([]() -> scheduler::coro::promise
+			scheduler::coro::on([](unsigned long long id) -> scheduler::coro::promise
 			{
-				auto* self = co_await scheduler::coro::self();
-
 				for (;;)
 				{
 					auto i = co_await scheduler::coro::waittill<int>("did you get it");
-					con::info("%llu recv did you get it %d\n", self->id(), i);
+					con::info("%llu recv did you get it %d\n", id, i);
 				}
 			});
 
-			const auto data_consume = []() -> scheduler::coro::promise
+			const auto data_consume = [](unsigned long long id) -> scheduler::coro::promise
 			{
-				auto se = scheduler::coro::self();
-				auto* self = co_await se;
-				se._pt->_data;
-
 				while (1)
 				{
 					auto s = co_await scheduler::coro::waittill<std::string>("data");
-					con::info("%llu recv data %s\n", self->id(), s.c_str());
+					con::info("%llu recv data %s\n", id, s.c_str());
 				}
 			};
 			scheduler::coro::on(data_consume, scheduler::main);
@@ -183,42 +173,38 @@ namespace test
 			scheduler::coro::on(data_consume, scheduler::async);
 			scheduler::coro::on(data_consume, scheduler::async);
 
-			scheduler::coro::on([]() -> scheduler::coro::promise
+			scheduler::coro::on([](unsigned long long id) -> scheduler::coro::promise
 			{
-				auto* self = co_await scheduler::coro::self();
-
 				for (auto h = 0; h < 5; h++)
 				{
 					co_await 1s;
-					con::info("%llu send data\n", self->id());
+					con::info("%llu send data\n", id);
 
 					for (auto i = 0; i < 5; i++)
 					{
 						co_await scheduler::coro::endframe{};
-						scheduler::coro::notify<std::string>("data", utils::string::va("data %d %d %llu", i, h, self->id()));
+						scheduler::coro::notify<std::string>("data", utils::string::va("data %d %d %llu", i, h, id));
 					}
 				}
 			});
 
-			scheduler::coro::on([]() -> scheduler::coro::promise
+			scheduler::coro::on([](unsigned long long id) -> scheduler::coro::promise
 			{
-				auto* self = co_await scheduler::coro::self();
 				co_await 6s;
 
-				con::info("%llu send bad data\n", self->id());
+				con::info("%llu send bad data\n", id);
 				scheduler::coro::notify<int>("bad data", 5);
 			});
 
-			scheduler::coro::on([]() -> scheduler::coro::promise
+			scheduler::coro::on([](unsigned long long id) -> scheduler::coro::promise
 			{
-				auto* self = co_await scheduler::coro::self();
 				try
 				{
 					co_await scheduler::coro::waittill<std::string>("bad data");
 				}
 				catch (const std::exception& ex)
 				{
-					con::info("%llu %s\n", self->id(), ex.what());
+					con::info("%llu %s\n", id, ex.what());
 				}
 			});
 			
@@ -367,23 +353,27 @@ namespace test
 				int value() const { return data ? *data : 0; }
 			};
 
-			scheduler::coro::on([]() -> scheduler::coro::promise
+			scheduler::coro::on([](unsigned long long id) -> scheduler::coro::promise
 			{
-				auto* self = co_await scheduler::coro::self();
 				co_await 10s;
 
 				auto a = RuleOfFive(420);
-				con::info("%llu sending ro5 %d\n", self->id(), a.value());
+				con::info("%llu sending ro5 %d\n", id, a.value());
 				scheduler::coro::notify("ro5", std::move(a));
 			});
 
-			scheduler::coro::on([]() -> scheduler::coro::promise
+			scheduler::coro::on([](unsigned long long id) -> scheduler::coro::promise
 			{
-				auto* self = co_await scheduler::coro::self();
-
 				auto a = co_await scheduler::coro::waittill<RuleOfFive>("ro5");
-				con::info("%llu recv ro5 %d\n", self->id(), a.value());
+				con::info("%llu recv ro5 %d\n", id, a.value());
 			});
+
+			auto coro_id = scheduler::coro::on([](unsigned long long id) -> scheduler::coro::promise
+			{
+				con::info("%llu coro\n", id);
+				co_return;
+			});
+			con::info("starting coro %llu\n", coro_id);
 		}
 	};
 }
